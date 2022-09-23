@@ -8,6 +8,11 @@ namespace SpiderEye.Bridge
     public interface IWebviewBridge
     {
         /// <summary>
+        /// Gets or sets the JSON converter to use.
+        /// </summary>
+        IJsonConverter JsonConverter { get; set; }
+
+        /// <summary>
         /// Adds a custom handler to be called from the webview.
         /// </summary>
         /// <param name="handler">The handler instance.</param>

@@ -5,7 +5,7 @@ namespace SpiderEye.Bridge
 {
     internal class SystemTextJsonConverter : IJsonConverter
     {
-        private static readonly JsonSerializerOptions Options = new()
+        private static JsonSerializerOptions Options { get; set; } = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };

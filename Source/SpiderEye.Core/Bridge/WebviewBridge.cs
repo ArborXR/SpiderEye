@@ -21,12 +21,12 @@ namespace SpiderEye.Bridge
         private static readonly object GlobalHandlerLock = new();
         private static readonly List<object> GlobalHandler = new();
 
-        private static readonly IJsonConverter JsonConverter = new SystemTextJsonConverter();
-
         private readonly HashSet<string> apiRootNames = new();
         private readonly Dictionary<string, ApiMethod> apiMethods = new();
 
         private readonly Window window;
+
+        public IJsonConverter JsonConverter { get; set; } = new SystemTextJsonConverter();
 
         public WebviewBridge(Window window)
         {
@@ -108,7 +108,7 @@ namespace SpiderEye.Bridge
             });
         }
 
-        private static string GetInvokeScript(string id, object data)
+        private string GetInvokeScript(string id, object data)
         {
             if (string.IsNullOrWhiteSpace(id)) { throw new ArgumentNullException(nameof(id)); }
 
@@ -117,7 +117,7 @@ namespace SpiderEye.Bridge
             return $"window._spidereye._sendEvent({idJson}, {dataJson})";
         }
 
-        private static EventResultModel ResolveEventResult(string id, string? resultJson)
+        private EventResultModel ResolveEventResult(string id, string? resultJson)
         {
             if (resultJson == null) { throw new InvalidOperationException($"Event with ID \"{id}\" did not return result JSON."); }
 
@@ -140,7 +140,7 @@ namespace SpiderEye.Bridge
             return result;
         }
 
-        private static T? ResolveInvokeResult<T>(EventResultModel result)
+        private T? ResolveInvokeResult<T>(EventResultModel result)
         {
             if (!result.HasResult || result.Result == null) { return default; }
             else { return JsonConverter.Deserialize<T>(result.Result); }
