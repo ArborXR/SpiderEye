@@ -5,7 +5,7 @@ namespace SpiderEye.Bridge
     /// <summary>
     /// Provides methods for converting objects to and from JSON.
     /// </summary>
-    internal interface IJsonConverter
+    public interface IJsonConverter
     {
         /// <summary>
         /// Serializes the given object to JSON.

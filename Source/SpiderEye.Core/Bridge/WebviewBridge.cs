@@ -21,12 +21,12 @@ namespace SpiderEye.Bridge
         private static readonly object GlobalHandlerLock = new();
         private static readonly List<object> GlobalHandler = new();
 
-        private static readonly IJsonConverter JsonConverter = new JsonNetJsonConverter();
-
         private readonly HashSet<string> apiRootNames = new();
         private readonly Dictionary<string, ApiMethod> apiMethods = new();
 
         private readonly Window window;
+
+        public IJsonConverter JsonConverter { get; set; } = new SystemTextJsonConverter();
 
         public WebviewBridge(Window window)
         {
@@ -94,8 +94,8 @@ namespace SpiderEye.Bridge
                         }
                         else if (info.CallbackId != null)
                         {
-                            string message = $"Invalid invoke type \"{info.Type ?? "<null>"}\".";
-                            await EndApiCall(info, ApiResultModel.FromError(message));
+                            JsCallException exception = new($"Invalid invoke type \"{info.Type ?? "<null>"}\".");
+                            await EndApiCall(info, ApiResultModel.FromError(exception));
                         }
                     }
                 }
@@ -108,7 +108,7 @@ namespace SpiderEye.Bridge
             });
         }
 
-        private static string GetInvokeScript(string id, object data)
+        private string GetInvokeScript(string id, object data)
         {
             if (string.IsNullOrWhiteSpace(id)) { throw new ArgumentNullException(nameof(id)); }
 
@@ -117,7 +117,7 @@ namespace SpiderEye.Bridge
             return $"window._spidereye._sendEvent({idJson}, {dataJson})";
         }
 
-        private static EventResultModel ResolveEventResult(string id, string? resultJson)
+        private EventResultModel ResolveEventResult(string id, string? resultJson)
         {
             if (resultJson == null) { throw new InvalidOperationException($"Event with ID \"{id}\" did not return result JSON."); }
 
@@ -140,7 +140,7 @@ namespace SpiderEye.Bridge
             return result;
         }
 
-        private static T? ResolveInvokeResult<T>(EventResultModel result)
+        private T? ResolveInvokeResult<T>(EventResultModel result)
         {
             if (!result.HasResult || result.Result == null) { return default; }
             else { return JsonConverter.Deserialize<T>(result.Result); }
@@ -157,7 +157,7 @@ namespace SpiderEye.Bridge
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                return ApiResultModel.FromError("No API name given.");
+                return ApiResultModel.FromError(new JsCallException("No API name given."));
             }
 
             if (apiMethods.TryGetValue(id, out var info))
@@ -180,7 +180,7 @@ namespace SpiderEye.Bridge
                 catch (TargetInvocationException tex) { return ApiResultModel.FromError(tex.InnerException ?? tex); }
                 catch (Exception ex) { return ApiResultModel.FromError(ex); }
             }
-            else { return ApiResultModel.FromError($"Unknown API call \"{id}\"."); }
+            else { return ApiResultModel.FromError(new JsCallException($"Unknown API call \"{id}\".")); }
         }
 
         private void AddApiObject(object handler)

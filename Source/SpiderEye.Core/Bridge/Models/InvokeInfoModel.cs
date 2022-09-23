@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using System.Text.Json.Serialization;
 
 namespace SpiderEye.Bridge.Models
 {
@@ -9,14 +8,7 @@ namespace SpiderEye.Bridge.Models
         public string? Id { get; set; }
         public int? CallbackId { get; set; }
 
-        [JsonIgnore]
-        public string? Parameters
-        {
-            get { return ParametersRaw?.Value as string; }
-            set { ParametersRaw = value == null ? null : new JRaw(value); }
-        }
-
-        [JsonProperty(nameof(Parameters))]
-        private JRaw? ParametersRaw { get; set; }
+        [JsonConverter(typeof(SystemTextRawJsonConverter))]
+        public string? Parameters { get; set; }
     }
 }
