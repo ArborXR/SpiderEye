@@ -21,7 +21,7 @@ namespace SpiderEye.Bridge
         private static readonly object GlobalHandlerLock = new();
         private static readonly List<object> GlobalHandler = new();
 
-        private static readonly IJsonConverter JsonConverter = new JsonNetJsonConverter();
+        private static readonly IJsonConverter JsonConverter = new SystemTextJsonConverter();
 
         private readonly HashSet<string> apiRootNames = new();
         private readonly Dictionary<string, ApiMethod> apiMethods = new();
@@ -94,8 +94,8 @@ namespace SpiderEye.Bridge
                         }
                         else if (info.CallbackId != null)
                         {
-                            string message = $"Invalid invoke type \"{info.Type ?? "<null>"}\".";
-                            await EndApiCall(info, ApiResultModel.FromError(message));
+                            JsCallException exception = new($"Invalid invoke type \"{info.Type ?? "<null>"}\".");
+                            await EndApiCall(info, ApiResultModel.FromError(exception));
                         }
                     }
                 }
@@ -157,7 +157,7 @@ namespace SpiderEye.Bridge
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                return ApiResultModel.FromError("No API name given.");
+                return ApiResultModel.FromError(new JsCallException("No API name given."));
             }
 
             if (apiMethods.TryGetValue(id, out var info))
@@ -180,7 +180,7 @@ namespace SpiderEye.Bridge
                 catch (TargetInvocationException tex) { return ApiResultModel.FromError(tex.InnerException ?? tex); }
                 catch (Exception ex) { return ApiResultModel.FromError(ex); }
             }
-            else { return ApiResultModel.FromError($"Unknown API call \"{id}\"."); }
+            else { return ApiResultModel.FromError(new JsCallException($"Unknown API call \"{id}\".")); }
         }
 
         private void AddApiObject(object handler)

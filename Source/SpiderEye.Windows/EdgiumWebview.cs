@@ -35,7 +35,7 @@ namespace SpiderEye.Windows
             set { webview.CoreWebView2.Settings.AreDevToolsEnabled = value; }
         }
 
-        private static readonly IJsonConverter JsonConverter = new JsonNetJsonConverter();
+        private static readonly IJsonConverter JsonConverter = new SystemTextJsonConverter();
 
         private readonly WebviewBridge bridge;
         private readonly WebView2 webview;

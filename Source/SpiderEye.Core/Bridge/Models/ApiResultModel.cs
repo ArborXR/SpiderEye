@@ -1,33 +1,15 @@
 ﻿using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
 
 namespace SpiderEye.Bridge.Models
 {
     internal class ApiResultModel
     {
-        [JsonIgnore]
-        public string? Value
-        {
-            get { return ValueRaw?.Value as string; }
-            set { ValueRaw = value == null ? null : new JRaw(value); }
-        }
+        [JsonConverter(typeof(SystemTextRawJsonConverter))]
+        public string? Value { get; set; }
 
         public bool Success { get; set; }
-        public string? Error { get; set; }
-
-        [JsonProperty(nameof(Value))]
-        private JRaw? ValueRaw { get; set; }
-
-        public static ApiResultModel FromError(string message)
-        {
-            return new ApiResultModel
-            {
-                Value = null,
-                Success = false,
-                Error = message,
-            };
-        }
+        public Exception? Error { get; set; }
 
         public static ApiResultModel FromError(Exception exception)
         {
@@ -35,7 +17,7 @@ namespace SpiderEye.Bridge.Models
             {
                 Value = null,
                 Success = false,
-                Error = exception.Message,
+                Error = exception,
             };
         }
     }
