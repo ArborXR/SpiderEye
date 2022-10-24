@@ -226,6 +226,11 @@ namespace SpiderEye.Mac
             windowDelegate.Dispose();
         }
 
+        internal void OnWindowClosing(CancelableEventArgs args)
+        {
+            Closing?.Invoke(this, args);
+        }
+
         private static NativeClassDefinition CreateWindowDelegate()
         {
             var definition = NativeClassDefinition.FromObject(

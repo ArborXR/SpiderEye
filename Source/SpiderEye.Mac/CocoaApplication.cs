@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using SpiderEye.Mac.Interop;
 using SpiderEye.Mac.Native;
@@ -54,6 +55,27 @@ namespace SpiderEye.Mac
                 AppKit.GetProtocol("NSTouchBarProvider"));
 
             definition.AddMethod<ShouldTerminateDelegate>(
+                "applicationShouldTerminate:",
+                "I@:@",
+                (self, op, notification) =>
+                {
+                    if (Application.OpenWindows.Count == 0)
+                    {
+                        return (byte)(Application.ExitWithLastWindow ? 1 : 0);
+                    }
+                    else
+                    {
+                        bool cancel = Application.OpenWindows.Any(window =>
+                        {
+                            CancelableEventArgs args = new();
+                            ((CocoaWindow)window.NativeWindow).OnWindowClosing(args);
+                            return args.Cancel;
+                        });
+                        return (byte)(cancel ? 0 : 1);
+                    }
+                });
+
+            definition.AddMethod<ShouldTerminateDelegateAfterLastWindowClosed>(
                 "applicationShouldTerminateAfterLastWindowClosed:",
                 "c@:@",
                 (self, op, notification) => (byte)(Application.ExitWithLastWindow ? 1 : 0));

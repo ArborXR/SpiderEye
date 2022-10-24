@@ -3,6 +3,7 @@
 namespace SpiderEye.Mac.Interop
 {
     internal delegate byte ShouldTerminateDelegate(IntPtr self, IntPtr op, IntPtr notification);
+    internal delegate byte ShouldTerminateDelegateAfterLastWindowClosed(IntPtr self, IntPtr op, IntPtr notification);
     internal delegate void ScriptCallbackDelegate(IntPtr self, IntPtr op, IntPtr notification, IntPtr msg);
     internal delegate void ScriptEvalCallbackDelegate(IntPtr self, IntPtr result, IntPtr error);
     internal delegate void NavigationDecideDelegate(IntPtr self, IntPtr op, IntPtr view, IntPtr navigationAction, IntPtr decisionHandler);
