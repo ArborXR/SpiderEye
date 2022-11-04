@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using SpiderEye.Mac.Interop;
-using SpiderEye.Mac.Native;
+using AppKit;
+using Foundation;
 
 namespace SpiderEye.Mac
 {
@@ -12,86 +12,56 @@ namespace SpiderEye.Mac
 
         public SynchronizationContext SynchronizationContext { get; }
 
-        public IntPtr Handle { get; }
-
-        private static readonly NativeClassDefinition AppDelegateDefinition;
-        private readonly NativeClassInstance appDelegate;
-
-        static CocoaApplication()
-        {
-            AppDelegateDefinition = CreateAppDelegate();
-        }
-
         public CocoaApplication()
         {
+            NSApplication.Init();
+
             Factory = new CocoaUiFactory();
-            SynchronizationContext = new CocoaSynchronizationContext();
+            SynchronizationContext = SynchronizationContext.Current!;
 
-            Handle = AppKit.Call("NSApplication", "sharedApplication");
-            appDelegate = AppDelegateDefinition.CreateInstance(this);
-
-            ObjC.Call(Handle, "setActivationPolicy:", IntPtr.Zero);
-            ObjC.Call(Handle, "setDelegate:", appDelegate.Handle);
+            NSApplication.SharedApplication.Delegate = new CocoaAppDelegate();
+            NSApplication.SharedApplication.ActivationPolicy = NSApplicationActivationPolicy.Regular;
         }
 
         public void Run()
         {
-            ObjC.Call(Handle, "run");
+            NSApplication.SharedApplication.Run();
         }
 
         public void Exit()
         {
-            ObjC.Call(Handle, "terminate:", Handle);
-            appDelegate.Dispose();
+            NSApplication.SharedApplication.Terminate(NSApplication.SharedApplication);
         }
 
-        private static NativeClassDefinition CreateAppDelegate()
+        private class CocoaAppDelegate : NSApplicationDelegate
         {
-            // note: NSApplicationDelegate is not available at runtime and returns null, it's kept for completeness
-            var definition = NativeClassDefinition.FromClass(
-                "SpiderEyeAppDelegate",
-                AppKit.GetClass("NSResponder"),
-                AppKit.GetProtocol("NSApplicationDelegate"),
-                AppKit.GetProtocol("NSTouchBarProvider"));
+            public override void DidFinishLaunching(NSNotification notification)
+            {
+                NSApplication.SharedApplication.ActivateIgnoringOtherApps(true);
+            }
 
-            definition.AddMethod<ShouldTerminateDelegate>(
-                "applicationShouldTerminate:",
-                "I@:@",
-                (self, op, notification) =>
+            public override NSApplicationTerminateReply ApplicationShouldTerminate(NSApplication sender)
+            {
+                if (Application.OpenWindows.Count == 0)
                 {
-                    if (Application.OpenWindows.Count == 0)
-                    {
-                        return (byte)(Application.ExitWithLastWindow ? 1 : 0);
-                    }
-                    else
-                    {
-                        bool cancel = Application.OpenWindows.Any(window =>
-                        {
-                            CancelableEventArgs args = new();
-                            ((CocoaWindow)window.NativeWindow).OnWindowClosing(args);
-                            return args.Cancel;
-                        });
-                        return (byte)(cancel ? 0 : 1);
-                    }
-                });
-
-            definition.AddMethod<ShouldTerminateDelegateAfterLastWindowClosed>(
-                "applicationShouldTerminateAfterLastWindowClosed:",
-                "c@:@",
-                (self, op, notification) => (byte)(Application.ExitWithLastWindow ? 1 : 0));
-
-            definition.AddMethod<NotificationDelegate>(
-                "applicationDidFinishLaunching:",
-                "v@:@",
-                (self, op, notification) =>
+                    return Application.ExitWithLastWindow ? NSApplicationTerminateReply.Now : NSApplicationTerminateReply.Cancel;
+                }
+                else
                 {
-                    var instance = definition.GetParent<CocoaApplication>(self);
-                    ObjC.Call(instance.Handle, "activateIgnoringOtherApps:", true);
-                });
+                    bool cancel = Application.OpenWindows.Any(window =>
+                    {
+                        CancelableEventArgs args = new();
+                        ((CocoaWindow)window.NativeWindow).OnWindowClosing(args);
+                        return args.Cancel;
+                    });
+                    return cancel ? NSApplicationTerminateReply.Cancel : NSApplicationTerminateReply.Now;
+                }
+            }
 
-            definition.FinishDeclaration();
-
-            return definition;
+            public override bool ApplicationShouldTerminateAfterLastWindowClosed(NSApplication sender)
+            {
+                return Application.ExitWithLastWindow;
+            }
         }
     }
 }
