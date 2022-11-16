@@ -15,6 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Source\SpiderEye.Windows\SpiderEye.Windows.csproj" />
+    <ProjectReference Include="..\..\Source\SpiderEye.Windows\SpiderEye.Windows.csproj">
+      <ReferenceSourceTarget></ReferenceSourceTarget>
+    </ProjectReference>
   </ItemGroup>
 </Project>
