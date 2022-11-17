@@ -101,6 +101,8 @@ namespace SpiderEye.Windows
 
             string initScript = Resources.GetInitScript("Edgium");
             await webview.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(initScript);
+
+            if (EnableDevTools) { webview.CoreWebView2.OpenDevToolsWindow(); }
         }
 
         private async void Webview_WebResourceRequested(object? sender, CoreWebView2WebResourceRequestedEventArgs e)
@@ -130,8 +132,6 @@ namespace SpiderEye.Windows
 
         private void Webview_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
         {
-            if (EnableDevTools) { webview.CoreWebView2.OpenDevToolsWindow(); }
-
             PageLoaded?.Invoke(this, new PageLoadEventArgs(lastNavigatedUri!, e.IsSuccess));
         }
 
