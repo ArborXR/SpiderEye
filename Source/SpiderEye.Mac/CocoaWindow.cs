@@ -92,7 +92,7 @@ namespace SpiderEye.Mac
                 backgroundColorField = value;
 
                 ColorTools.ParseHex(value, out byte r, out byte g, out byte b);
-                using var color = NSColor.FromRgba((byte)(r / 255d), (byte)(g / 255d), (byte)(b / 255d), (byte)1);
+                using var color = NSColor.FromRgba(r, g, b, (byte)255);
                 BackgroundColor = color;
 
                 using var key = new NSString("backgroundColor");
