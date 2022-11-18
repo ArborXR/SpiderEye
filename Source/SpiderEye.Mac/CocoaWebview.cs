@@ -49,7 +49,10 @@ namespace SpiderEye.Mac
         {
             this.bridge = bridge ?? throw new ArgumentNullException(nameof(bridge));
 
-            customHost = new Uri(UriTools.GetRandomResourceUrl(SCHEME));
+            customHost = new Uri(
+                Application.CustomHostDomain is string customHostDomain
+                    ? $"{SCHEME}://{customHostDomain}"
+                    : UriTools.GetRandomResourceUrl(SCHEME));
 
             WKUserContentController manager = Configuration.UserContentController;
             manager.AddScriptMessageHandler(new CocoaScriptMessageHandler(this), "external");
