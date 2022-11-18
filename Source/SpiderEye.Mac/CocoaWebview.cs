@@ -27,7 +27,6 @@ namespace SpiderEye.Mac
             }
             set
             {
-                enableDevToolsField = value;
                 using var boolValue = new NSNumber(value);
                 using var key = new NSString("developerExtrasEnabled");
                 preferences.SetValueForKey(boolValue, key);
@@ -44,8 +43,6 @@ namespace SpiderEye.Mac
         private readonly Uri customHost;
         private readonly WKPreferences preferences;
         private readonly IDisposable titleObserver;
-
-        private bool enableDevToolsField;
 
         public CocoaWebview(WebviewBridge bridge)
             : base(CGRect.Empty, CreateConfiguration())
