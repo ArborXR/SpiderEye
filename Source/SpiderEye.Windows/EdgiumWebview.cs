@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
@@ -34,7 +35,7 @@ namespace SpiderEye.Windows
             get { return webview.CoreWebView2.Settings.AreDevToolsEnabled; }
             set { webview.CoreWebView2.Settings.AreDevToolsEnabled = value; }
         }
-
+        private const string SCHEME = "https";
         private readonly WebviewBridge bridge;
         private readonly WebView2 webview;
         private readonly Uri customHost;
@@ -46,11 +47,10 @@ namespace SpiderEye.Windows
         {
             this.bridge = bridge ?? throw new ArgumentNullException(nameof(bridge));
 
-            const string scheme = "http";
             customHost = new Uri(
                 Application.CustomHostDomain is string customHostDomain
-                    ? $"{scheme}://{customHostDomain}"
-                    : UriTools.GetRandomResourceUrl(scheme));
+                    ? $"{SCHEME}://{customHostDomain}"
+                    : UriTools.GetRandomResourceUrl(SCHEME));
 
             webview = new WebView2();
             webview.NavigationStarting += Webview_NavigationStarting;
@@ -89,7 +89,18 @@ namespace SpiderEye.Windows
 
         private async Task InitWebview()
         {
-            environment = await CoreWebView2Environment.CreateAsync();
+            var customSchemeRegistration = new CoreWebView2CustomSchemeRegistration(SCHEME)
+            {
+                TreatAsSecure = true,
+            };
+
+            var customSchemeRegistrations = new List<CoreWebView2CustomSchemeRegistration>
+            {
+                customSchemeRegistration,
+            };
+
+            var options = new CoreWebView2EnvironmentOptions(null, null, null, false, customSchemeRegistrations);
+            environment = await CoreWebView2Environment.CreateAsync(null, null, options);
             await webview.EnsureCoreWebView2Async(environment);
 
             webview.CoreWebView2.AddWebResourceRequestedFilter(customHost.OriginalString + "/*", CoreWebView2WebResourceContext.All);
