@@ -89,18 +89,7 @@ namespace SpiderEye.Windows
 
         private async Task InitWebview()
         {
-            var customSchemeRegistration = new CoreWebView2CustomSchemeRegistration(SCHEME)
-            {
-                TreatAsSecure = true,
-            };
-
-            var customSchemeRegistrations = new List<CoreWebView2CustomSchemeRegistration>
-            {
-                customSchemeRegistration,
-            };
-
-            var options = new CoreWebView2EnvironmentOptions(null, null, null, false, customSchemeRegistrations);
-            environment = await CoreWebView2Environment.CreateAsync(null, null, options);
+            environment = await CoreWebView2Environment.CreateAsync();
             await webview.EnsureCoreWebView2Async(environment);
 
             webview.CoreWebView2.AddWebResourceRequestedFilter(customHost.OriginalString + "/*", CoreWebView2WebResourceContext.All);
