@@ -69,7 +69,7 @@ namespace SpiderEye.Windows
 
         public Task<string?> ExecuteScriptAsync(string script)
         {
-            string? result = webview.Document.InvokeScript("eval", new string[] { script })?.ToString();
+            string? result = webview.Document?.InvokeScript("eval", new string[] { script })?.ToString();
             return Task.FromResult(result);
         }
 
@@ -80,6 +80,7 @@ namespace SpiderEye.Windows
 
         private void Webview_Navigating(object? sender, WebBrowserNavigatingEventArgs e)
         {
+            if (e.Url == null) { return; }
             var args = new NavigatingEventArgs(e.Url);
             Navigating?.Invoke(this, args);
             e.Cancel = args.Cancel;

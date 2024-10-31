@@ -10,9 +10,9 @@ namespace SpiderEye.Windows
         {
             return new WFFolderBrowserDialog
             {
-                UseDescriptionForTitle = true,
-                Description = Title,
-                SelectedPath = SelectedPath,
+                UseDescriptionForTitle = true,                
+                Description = Title ?? string.Empty,
+                SelectedPath = SelectedPath ?? string.Empty,
                 ShowNewFolderButton = true,
             };
         }
