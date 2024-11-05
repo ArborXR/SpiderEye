@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0-macos13.0</TargetFramework>
+    <ValidateTargetPlatformVersion>false</ValidateTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <EnableCodeSigning>false</EnableCodeSigning>
